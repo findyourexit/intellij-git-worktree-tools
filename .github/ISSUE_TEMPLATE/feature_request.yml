@@ -1,0 +1,53 @@
+name: Feature Request
+description: Propose a new feature or behaviour change.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem you are trying to solve, not just the solution you have in mind.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What are you trying to do that is currently not possible or is inconvenient?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you want. Be specific about UI entry points, defaults, and edge cases.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you evaluated and why you ruled them out.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the plugin does this affect?
+      options:
+        - Worktree listing and tool window
+        - Creating worktrees
+        - Opening worktrees
+        - Carry-over on first open
+        - Settings
+        - Other / not sure
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This is not already covered by an existing feature.
+          required: false
