@@ -1,0 +1,66 @@
+# detekt configuration for Git Arborist
+# Applied on top of detekt defaults via buildUponDefaultConfig = true in build.gradle.kts.
+# Only rules that differ from the detekt 2.0.x defaults are listed here.
+
+config:
+  validation: true
+  warningsAsErrors: false
+  checkExhaustiveness: false
+
+# Documentation rules — KDoc is applied where it adds value, not enforced on every declaration.
+comments:
+  active: false
+
+# Raise thresholds to fit IntelliJ plugin service/UI patterns.
+complexity:
+  CyclomaticComplexMethod:
+    allowedComplexity: 20      # default 15; plugin action handlers and when-chains are naturally deeper
+  LongMethod:
+    allowedLines: 80           # default 60; UI DSL panels read as one long expression
+  LongParameterList:
+    allowedFunctionParameters: 8      # default 6
+    allowedConstructorParameters: 12  # default 7; WorktreeInfo has 11 fields
+  NamedArguments:
+    active: false              # noisy for constructor calls with many positional defaults
+  NestedBlockDepth:
+    allowedDepth: 6            # default 4; panel { group { row { } } } nesting is common
+  TooManyFunctions:
+    allowedFunctionsPerFile: 50
+    allowedFunctionsPerClass: 25      # default 11; WorktreeGitService aggregates all worktree CRUD + status ops
+    allowedFunctionsPerInterface: 15
+    allowedFunctionsPerObject: 20
+    allowedFunctionsPerEnum: 15
+  MethodOverloading:
+    active: false
+
+# Broad exception handling occasionally required in IntelliJ plugin lifecycle callbacks.
+exceptions:
+  TooGenericExceptionCaught:
+    active: false
+  SwallowedException:
+    active: false
+
+# Style rules that overlap with ktlint or are too noisy at this stage.
+style:
+  MagicNumber:
+    active: false              # UI layout constants are verbose to extract without benefit
+  MaxLineLength:
+    active: false              # enforced by ktlint via .editorconfig max_line_length
+  UnusedImport:
+    active: false              # enforced by ktlint
+  NewLineAtEndOfFile:
+    active: false              # enforced by ktlint
+  TrailingWhitespace:
+    active: false              # enforced by ktlint
+  NoTabs:
+    active: false              # enforced by ktlint
+  SpacingAfterPackageAndImports:
+    active: false              # enforced by ktlint
+  ForbiddenComment:
+    active: false              # TODO/FIXME are not used as durable markers in this codebase
+  ReturnCount:
+    max: 3                     # default 2; labeled returns in coroutine lambdas count
+  DataClassContainsFunctions:
+    active: false              # helper methods on model types are acceptable
+  StringShouldBeRawString:
+    active: false              # \n in joinToString / log messages is intentional
