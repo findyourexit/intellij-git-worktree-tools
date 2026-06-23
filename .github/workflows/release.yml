@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew buildPlugin
 
       - name: Upload plugin ZIP as workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: git-worktree-tools-${{ github.ref_name }}
           path: build/distributions/*.zip
