@@ -1,0 +1,23 @@
+import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
+
+rootProject.name = "intellij-git-arborist"
+
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id("org.jetbrains.intellij.platform.settings").version("2.16.0")
+}
+
+@Suppress("UnstableApiUsage")
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        mavenCentral()
+        intellijPlatform { defaultRepositories() }
+    }
+}
