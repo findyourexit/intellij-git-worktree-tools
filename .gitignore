@@ -1,0 +1,92 @@
+# ---------------------------------------------------------------------------
+# Build output
+# ---------------------------------------------------------------------------
+.gradle/
+build/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ Platform Gradle Plugin caches and sandbox
+.intellijPlatform/
+
+# Kotlin incremental compilation
+.kotlin/
+
+# Qodana
+.qodana/
+
+# ---------------------------------------------------------------------------
+# JetBrains IDEs
+# Based on https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#
+# Shared project configuration under .idea/ (code style, VCS mapping) is
+# committed. User-specific and Gradle-regenerated files are ignored below.
+# ---------------------------------------------------------------------------
+
+# User-specific
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/.name
+
+# Generated, and recreated by Gradle auto-import
+.idea/**/contentModel.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/compiler.xml
+.idea/**/jarRepositories.xml
+.idea/**/modules.xml
+.idea/**/modules
+.idea/artifacts
+
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# Editor-based HTTP Client
+.idea/httpRequests
+http-client.private.env.json
+
+# SonarLint
+.idea/sonarlint/
+.idea/sonarlint.xml
+
+# Caches and migrations
+.idea/caches/build_file_checksums.ser
+.idea/**/copilot.data.migration.*.xml
+
+# Other JetBrains plugins
+.idea/replstate.xml
+.idea/**/mongoSettings.xml
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Module and project files
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# CMake
+cmake-build-*/
+
+# ---------------------------------------------------------------------------
+# Operating system
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
