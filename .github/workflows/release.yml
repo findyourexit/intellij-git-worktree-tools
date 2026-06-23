@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_to_marketplace:
+        description: 'Publish to JetBrains Marketplace (requires PUBLISH_TOKEN secret)'
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & release
+    runs-on: ubuntu-latest
+    # Expose the secret as a job-level env var so step conditions can test its presence
+    # without triggering a failure when the secret is absent.
+    env:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build plugin distribution
+        run: ./gradlew buildPlugin
+
+      - name: Upload plugin ZIP as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-worktree-tools-${{ github.ref_name }}
+          path: build/distributions/*.zip
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "Git Worktree Tools ${{ github.ref_name }}" \
+            --generate-notes \
+            build/distributions/*.zip
+
+      # Publishes to JetBrains Marketplace when PUBLISH_TOKEN is present and either:
+      #   - a version tag triggered the run, or
+      #   - workflow_dispatch was used with publish_to_marketplace: true
+      - name: Publish to JetBrains Marketplace
+        if: >
+          env.PUBLISH_TOKEN != '' &&
+          (
+            startsWith(github.ref, 'refs/tags/v') ||
+            (github.event_name == 'workflow_dispatch' && inputs.publish_to_marketplace)
+          )
+        run: ./gradlew publishPlugin

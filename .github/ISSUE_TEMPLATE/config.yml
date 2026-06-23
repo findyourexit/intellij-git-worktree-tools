@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/findyourexit/intellij-git-worktree-tools/security/advisories/new
+    about: Report a security vulnerability privately via GitHub's advisory system.
+  - name: Support question
+    url: https://github.com/findyourexit/intellij-git-worktree-tools/issues/new?template=bug_report.yml
+    about: See SUPPORT.md for what to include in a bug report.

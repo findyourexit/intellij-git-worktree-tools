@@ -1,0 +1,87 @@
+name: Bug Report
+description: Something is not working correctly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, check [existing issues](https://github.com/findyourexit/intellij-git-worktree-tools/issues) to avoid duplicates.
+
+  - type: input
+    id: ide
+    attributes:
+      label: IDE and version
+      description: "From Help > About. Include the edition (Community / Ultimate / Android Studio)."
+      placeholder: "IntelliJ IDEA 2025.2.6 Ultimate"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: "From Settings > Plugins, next to Git Worktree Tools."
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and architecture
+      placeholder: "macOS 15.4 arm64"
+    validations:
+      required: true
+
+  - type: input
+    id: git-version
+    attributes:
+      label: Git version
+      description: Output of `git --version`.
+      placeholder: "git version 2.49.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact sequence of actions that triggers the problem.
+      placeholder: |
+        1. Open a repository with at least one existing worktree.
+        2. Open the Worktrees tool window.
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include any error messages shown in the IDE or visible in Help > Show Log.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: IDE log excerpt
+      description: Relevant lines from Help > Show Log. Wrap in triple backticks if pasting raw text.
+      render: text
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I can reproduce this on the latest commit of `main`.
+          required: false
