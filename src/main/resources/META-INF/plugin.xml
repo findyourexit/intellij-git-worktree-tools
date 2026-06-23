@@ -1,0 +1,45 @@
+<idea-plugin>
+    <id>dev.gitworktreetools.intellij</id>
+    <name>Git Worktree Tools</name>
+    <vendor url="https://github.com/findyourexit/intellij-git-worktree-tools">Git Worktree Tools</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+
+    <resource-bundle>messages.GitWorktreeToolsBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Git Worktree Tools" anchor="right" icon="/icons/worktrees.svg" factoryClass="dev.gitworktreetools.ui.WorktreesToolWindowFactory" doNotActivateOnStart="true"/>
+        <projectConfigurable parentId="vcs" id="dev.gitworktreetools.settings" instance="dev.gitworktreetools.settings.GitWorktreeToolsConfigurable" displayName="Git Worktree Tools"/>
+        <postStartupActivity implementation="dev.gitworktreetools.open.WorktreeProjectActivity"/>
+        <projectViewNodeDecorator implementation="dev.gitworktreetools.ui.WorktreeProjectViewDecorator"/>
+        <frameTitleBuilder implementation="dev.gitworktreetools.ui.WorktreeFrameTitleBuilder" order="first"/>
+        <notificationGroup id="Git Worktree Tools" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="dev.gitworktreetools.actions.WorktreesMenu" text="Worktrees" popup="true">
+            <action id="dev.gitworktreetools.actions.OpenWorktreesPanel" class="dev.gitworktreetools.actions.OpenWorktreesPanelAction" text="Open Worktrees Panel"/>
+            <action id="dev.gitworktreetools.actions.CreateWorktree" class="dev.gitworktreetools.actions.CreateWorktreeAction" text="Create Worktree..."/>
+            <action id="dev.gitworktreetools.actions.OpenWorktree" class="dev.gitworktreetools.actions.OpenWorktreeAction" text="Open Worktree..."/>
+            <group id="dev.gitworktreetools.actions.SwitchToWorktree" class="dev.gitworktreetools.actions.SwitchToWorktreeActionGroup" text="Switch to Worktree" popup="true"/>
+            <action id="dev.gitworktreetools.actions.ReapplyCarryOver" class="dev.gitworktreetools.actions.ReapplyCarryOverAction" text="Reapply Carry-over..."/>
+            <action id="dev.gitworktreetools.actions.RemoveWorktree" class="dev.gitworktreetools.actions.RemoveWorktreeAction" text="Remove Worktree..."/>
+            <action id="dev.gitworktreetools.actions.LockWorktree" class="dev.gitworktreetools.actions.LockWorktreeAction" text="Lock Worktree..."/>
+            <action id="dev.gitworktreetools.actions.UnlockWorktree" class="dev.gitworktreetools.actions.UnlockWorktreeAction" text="Unlock Worktree..."/>
+            <action id="dev.gitworktreetools.actions.MoveWorktree" class="dev.gitworktreetools.actions.MoveWorktreeAction" text="Move Worktree..."/>
+            <action id="dev.gitworktreetools.actions.PruneWorktrees" class="dev.gitworktreetools.actions.PruneWorktreesAction" text="Prune Worktrees"/>
+            <action id="dev.gitworktreetools.actions.RepairWorktrees" class="dev.gitworktreetools.actions.RepairWorktreesAction" text="Repair Worktrees"/>
+            <add-to-group group-id="Git.MainMenu" anchor="last"/>
+        </group>
+
+        <group id="dev.gitworktreetools.actions.ProjectViewWorktreeMenu" class="dev.gitworktreetools.actions.ProjectViewWorktreeGroup" text="Git Worktree Tools" popup="true">
+            <action id="dev.gitworktreetools.actions.ProjectViewOpenWorktree" class="dev.gitworktreetools.actions.ProjectViewOpenWorktreeAction" text="Open Worktree"/>
+            <action id="dev.gitworktreetools.actions.ProjectViewOpenWorktreeAsTab" class="dev.gitworktreetools.actions.ProjectViewOpenWorktreeAsTabAction" text="Open Worktree as Tab"/>
+            <action id="dev.gitworktreetools.actions.ProjectViewReplaceWithWorktree" class="dev.gitworktreetools.actions.ProjectViewReplaceWithWorktreeAction" text="Replace Current Project with Worktree"/>
+            <action id="dev.gitworktreetools.actions.ProjectViewReapplyCarryOver" class="dev.gitworktreetools.actions.ProjectViewReapplyCarryOverAction" text="Reapply Carry-over..."/>
+            <action id="dev.gitworktreetools.actions.ProjectViewRemoveWorktree" class="dev.gitworktreetools.actions.ProjectViewRemoveWorktreeAction" text="Remove Worktree..."/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>
