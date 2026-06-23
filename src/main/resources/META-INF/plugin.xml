@@ -1,0 +1,66 @@
+<idea-plugin>
+    <id>dev.tomlarcher.gitarborist</id>
+    <!--suppress PluginXmlValidity -->
+    <name>Git Arborist</name>
+    <vendor url="https://github.com/findyourexit/intellij-git-arborist">Tom Larcher</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+
+    <resource-bundle>messages.GitArboristBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Git Arborist" anchor="right" icon="/icons/worktrees.svg"
+                    factoryClass="dev.tomlarcher.gitarborist.ui.WorktreesToolWindowFactory" doNotActivateOnStart="true"/>
+        <projectConfigurable parentId="vcs" id="dev.tomlarcher.gitarborist.settings"
+                             instance="dev.tomlarcher.gitarborist.settings.GitArboristConfigurable"
+                             key="settings.display.name"/>
+        <postStartupActivity implementation="dev.tomlarcher.gitarborist.open.WorktreeProjectActivity"/>
+        <projectViewNodeDecorator implementation="dev.tomlarcher.gitarborist.ui.WorktreeProjectViewDecorator"/>
+        <notificationGroup id="Git Arborist" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="dev.tomlarcher.gitarborist.actions.WorktreesMenu" popup="true">
+            <action id="dev.tomlarcher.gitarborist.actions.OpenWorktreesPanel"
+                    class="dev.tomlarcher.gitarborist.actions.OpenWorktreesPanelAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.CreateWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.CreateWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.OpenWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.OpenWorktreeAction"/>
+            <group id="dev.tomlarcher.gitarborist.actions.SwitchToWorktree"
+                   class="dev.tomlarcher.gitarborist.actions.SwitchToWorktreeActionGroup"
+                   popup="true"/>
+            <action id="dev.tomlarcher.gitarborist.actions.ReapplyCarryOver"
+                    class="dev.tomlarcher.gitarborist.actions.ReapplyCarryOverAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.RemoveWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.RemoveWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.LockWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.LockWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.UnlockWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.UnlockWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.MoveWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.MoveWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.PruneWorktrees"
+                    class="dev.tomlarcher.gitarborist.actions.PruneWorktreesAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.RepairWorktrees"
+                    class="dev.tomlarcher.gitarborist.actions.RepairWorktreesAction"/>
+            <add-to-group group-id="Git.MainMenu" anchor="last"/>
+        </group>
+
+        <group id="dev.tomlarcher.gitarborist.actions.ProjectViewWorktreeMenu"
+               class="dev.tomlarcher.gitarborist.actions.ProjectViewWorktreeGroup" popup="true">
+            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAsTab"
+                    class="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAsTabAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewReplaceWithWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.ProjectViewReplaceWithWorktreeAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewReapplyCarryOver"
+                    class="dev.tomlarcher.gitarborist.actions.ProjectViewReapplyCarryOverAction"/>
+            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewRemoveWorktree"
+                    class="dev.tomlarcher.gitarborist.actions.ProjectViewRemoveWorktreeAction"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>
