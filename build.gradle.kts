@@ -54,6 +54,9 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = "252"
+            // Open-ended compatibility: build 252 and all later builds, matching the README.
+            // Each release is gated by the Plugin Verifier (IDEA Ultimate + Android Studio).
+            untilBuild = provider { null }
         }
 
         vendor {
@@ -63,7 +66,41 @@ intellijPlatform {
 
         description =
             """
-            Git Arborist makes Git worktrees first-class inside JetBrains IDEs: create, list, open, remove, lock, prune, repair, move, and carry over project setup before first open.
+            <p>
+            Git Arborist makes Git worktrees first-class inside JetBrains IDEs. Create, open, and
+            manage worktrees from a dedicated tool window, the <b>Git</b> menu, and the Project View — and
+            carry your project setup (run configurations, code style, local tooling) into a new worktree
+            automatically, before the IDE opens it for the first time.
+            </p>
+            <p>
+            A Git worktree checks out a second branch of the same repository into its own directory, so you
+            can review a pull request without stashing, run a long build on one branch while you keep coding
+            on another, or keep a release branch open beside <code>main</code>. This plugin removes the
+            friction of driving that workflow from inside the IDE.
+            </p>
+            <p><b>Features</b></p>
+            <ul>
+            <li><b>Worktrees tool window</b> — each worktree is one row with a branch title, a path / commit /
+            age subtitle, and state badges (main, current, safe-to-delete, dirty, locked, prunable, detached,
+            staged/unstaged/untracked counts, and divergence from <code>main</code> and the remote). Status
+            loads asynchronously and never blocks the UI.</li>
+            <li><b>Search, filter, and sort</b> across branch, path, commit, message, creator, and state.</li>
+            <li><b>Every worktree operation through Git4Idea</b> — list, create, open, remove (with optional
+            force and backing-branch deletion), lock, unlock, move, prune, and repair, all on a background
+            thread.</li>
+            <li><b>Flexible open modes</b> — a new window, a tab on the current frame, in place of the current
+            project, or the IDE's normal open prompt; an already-open worktree is focused instead of opened
+            twice.</li>
+            <li><b>Carry over project setup on first open</b> — copies <code>.idea/</code> and any paths listed
+            in a <code>.worktree-copy</code> manifest into a new worktree before it opens. Secrets and heavy
+            build directories are never copied.</li>
+            <li><b>Safe-to-delete detection</b> — worktrees whose work is fully merged are dimmed and badged
+            <code>SAFE</code>.</li>
+            </ul>
+            <p>
+            Requires an IntelliJ Platform IDE (2025.2 or later, build 252+) that bundles the Git4Idea plugin,
+            such as IntelliJ IDEA or Android Studio.
+            </p>
             """.trimIndent()
 
         changeNotes =
@@ -73,7 +110,6 @@ intellijPlatform {
     }
 
     pluginVerification {
-        freeArgs = listOf("-mute", "TemplateWordInPluginId")
         ides {
             create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.intellijIdea.get())
             create(IntelliJPlatformType.AndroidStudio, libs.versions.androidStudio.get())
