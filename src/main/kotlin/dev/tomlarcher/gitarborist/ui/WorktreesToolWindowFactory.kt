@@ -13,7 +13,6 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.impl.content.ToolWindowContentUi
 import com.intellij.ui.content.ContentFactory
 import dev.tomlarcher.gitarborist.git.RepositoryScope
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import dev.tomlarcher.gitarborist.util.PathUtil
 import git4idea.repo.GitRemote
 import git4idea.repo.GitRepository
@@ -49,8 +48,7 @@ class WorktreesToolWindowFactory :
             listOf(
                 titleAction("Create Worktree", "Create worktree", AllIcons.General.Add) { panel.createWorktree() },
                 titleAction("Remove Worktree", "Remove selected worktree", AllIcons.General.Remove) { panel.removeSelected() },
-                titleAction("Switch Worktree", "Replace current project with selected worktree", AllIcons.Actions.SwapPanels) { panel.switchSelected() },
-                titleAction("Open Worktree", "Open selected worktree", AllIcons.Actions.MenuOpen) { panel.openSelected(WorktreeOpenMode.IdeDefault) },
+                titleAction("Open Worktree...", "Open selected worktree", AllIcons.Actions.MenuOpen) { panel.openSelected() },
                 titleAction("Refresh Worktrees", "Refresh worktrees", AllIcons.Actions.Refresh) { panel.refresh() },
             ),
         )

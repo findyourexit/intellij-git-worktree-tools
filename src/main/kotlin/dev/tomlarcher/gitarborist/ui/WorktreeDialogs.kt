@@ -7,7 +7,6 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
 import dev.tomlarcher.gitarborist.git.AddWorktreeRequest
 import dev.tomlarcher.gitarborist.git.WorktreeInfo
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import dev.tomlarcher.gitarborist.util.PathUtil
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -63,7 +62,7 @@ class WorktreePickerDialog(
 class CreateWorktreeDialog(
     project: Project,
     repositoryRoot: Path,
-    defaultOpenMode: WorktreeOpenMode,
+    openByDefault: Boolean,
     private val worktreeDirectory: String,
 ) : DialogWrapper(project) {
     private val repositoryRootPath = PathUtil.normalize(repositoryRoot)
@@ -79,7 +78,7 @@ class CreateWorktreeDialog(
         title = "Create Worktree"
         branchField.emptyText.text = "e.g. findyourexit/feature-name"
         sourceRefField.emptyText.text = "HEAD, branch, tag, or commit SHA"
-        afterCreateBox.selectedItem = AfterCreateMode.from(defaultOpenMode)
+        afterCreateBox.selectedItem = AfterCreateMode.forOpenByDefault(openByDefault)
         branchField.document.addDocumentListener(
             object : DocumentAdapter() {
                 override fun textChanged(e: DocumentEvent) {
@@ -99,8 +98,8 @@ class CreateWorktreeDialog(
         init()
     }
 
-    val selectedOpenMode: WorktreeOpenMode?
-        get() = (afterCreateBox.selectedItem as AfterCreateMode).openMode
+    val shouldOpenAfterCreate: Boolean
+        get() = (afterCreateBox.selectedItem as AfterCreateMode).shouldOpen
 
     fun request(): AddWorktreeRequest =
         AddWorktreeRequest(
@@ -161,25 +160,15 @@ class CreateWorktreeDialog(
 /** What to do with a worktree immediately after it is created. */
 enum class AfterCreateMode(
     private val label: String,
-    val openMode: WorktreeOpenMode?,
+    val shouldOpen: Boolean,
 ) {
-    DoNotOpen("Do not open", null),
-    OpenWithIde("Open...", WorktreeOpenMode.IdeDefault),
-    NewWindow("Open in new window", WorktreeOpenMode.NewWindow),
-    OpenAsTab("Open as tab", WorktreeOpenMode.AttachToCurrentFrame),
-    ReplaceCurrent("Replace current project", WorktreeOpenMode.ReplaceCurrentProject),
+    DoNotOpen("Do not open", false),
+    Open("Open...", true),
     ;
 
     override fun toString(): String = label
 
     companion object {
-        fun from(mode: WorktreeOpenMode): AfterCreateMode =
-            when (mode) {
-                WorktreeOpenMode.IdeDefault -> OpenWithIde
-                WorktreeOpenMode.NewWindow -> NewWindow
-                WorktreeOpenMode.AttachToCurrentFrame -> OpenAsTab
-                WorktreeOpenMode.ReplaceCurrentProject -> ReplaceCurrent
-                WorktreeOpenMode.AskEachTime -> NewWindow
-            }
+        fun forOpenByDefault(open: Boolean): AfterCreateMode = if (open) Open else DoNotOpen
     }
 }

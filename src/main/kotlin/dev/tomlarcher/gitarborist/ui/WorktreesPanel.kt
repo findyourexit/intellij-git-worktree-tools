@@ -35,7 +35,6 @@ import dev.tomlarcher.gitarborist.git.WorktreeCacheService
 import dev.tomlarcher.gitarborist.git.WorktreeCommandResult
 import dev.tomlarcher.gitarborist.git.WorktreeGitService
 import dev.tomlarcher.gitarborist.git.WorktreeInfo
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import dev.tomlarcher.gitarborist.git.requiresForceRetry
 import dev.tomlarcher.gitarborist.open.WorktreeOpenService
 import dev.tomlarcher.gitarborist.settings.GitArboristSettingsResolver
@@ -98,7 +97,7 @@ class WorktreesPanel(
                 object : MouseAdapter() {
                     override fun mouseClicked(event: MouseEvent) {
                         if (event.clickCount == 2 && SwingUtilities.isLeftMouseButton(event)) {
-                            openSelected(WorktreeOpenMode.IdeDefault)
+                            openSelected()
                         }
                     }
                 },
@@ -108,7 +107,7 @@ class WorktreesPanel(
                     override fun keyPressed(event: KeyEvent) {
                         if (event.keyCode == KeyEvent.VK_ENTER) {
                             event.consume()
-                            openSelected(WorktreeOpenMode.IdeDefault)
+                            openSelected()
                         }
                     }
                 },
@@ -190,7 +189,6 @@ class WorktreesPanel(
         )
         WorktreesContextMenu(
             open = ::openSelected,
-            replaceCurrent = ::switchSelected,
             lock = ::lockSelected,
             unlock = ::unlockSelected,
             move = ::moveSelected,
@@ -373,21 +371,21 @@ class WorktreesPanel(
                 ?.info
         val repositoryRoot = main?.repositoryRoot ?: project.basePath?.let(java.nio.file.Path::of) ?: return
         val settings = GitArboristSettingsResolver.effective(project)
-        val dialog = CreateWorktreeDialog(project, repositoryRoot, settings.defaultOpenMode, settings.defaultWorktreeDirectory)
+        val dialog = CreateWorktreeDialog(project, repositoryRoot, settings.openAfterCreate, settings.defaultWorktreeDirectory)
         if (!dialog.showAndGet()) return
-        createWorktree(dialog.request(), dialog.selectedOpenMode)
+        createWorktree(dialog.request(), dialog.shouldOpenAfterCreate)
     }
 
     private fun createWorktree(
         request: AddWorktreeRequest,
-        openMode: WorktreeOpenMode?,
+        openAfterCreate: Boolean,
     ) {
         runBackground(
             title = "Creating Git worktree",
             work = {
                 val result = project.service<WorktreeGitService>().addWorktree(request)
                 val created =
-                    if (result.success && openMode != null) {
+                    if (result.success && openAfterCreate) {
                         project
                             .service<WorktreeCacheService>()
                             .refreshBlocking()
@@ -403,7 +401,7 @@ class WorktreesPanel(
                 Notifications.info(project, "Worktree created", request.targetPath.toString())
                 refresh()
                 result.worktree?.let { worktree ->
-                    openMode?.let { project.service<WorktreeOpenService>().openWorktreeAsync(worktree, it) }
+                    if (openAfterCreate) project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
                 }
             } else {
                 Notifications.error(project, "Unable to create worktree", result.command.output.ifBlank { "Git command failed" })
@@ -466,16 +464,9 @@ class WorktreesPanel(
         }
     }
 
-    fun switchSelected() {
+    fun openSelected() {
         val worktree = selectedWorktree() ?: return
-        if (Messages.showYesNoDialog(project, "Replace the current project with ${worktree.path}?", "Switch Worktree", null) == Messages.YES) {
-            openSelected(WorktreeOpenMode.ReplaceCurrentProject)
-        }
-    }
-
-    fun openSelected(mode: WorktreeOpenMode) {
-        val worktree = selectedWorktree() ?: return
-        project.service<WorktreeOpenService>().openWorktreeAsync(worktree, mode)
+        project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
     }
 
     private fun selectedWorktree(): WorktreeInfo? {
@@ -665,9 +656,17 @@ private object SearchableChooserPopup {
             JBList(listModel).apply {
                 selectionMode = ListSelectionModel.SINGLE_SELECTION
                 cellRenderer =
-                    SimpleListCellRenderer.create { label, value, _ ->
-                        label.text = if (value == selectedItem) "✓ ${labelProvider(value)}" else labelProvider(value)
-                        label.icon = iconProvider(value)
+                    object : SimpleListCellRenderer<T>() {
+                        override fun customize(
+                            list: JList<out T>,
+                            value: T,
+                            index: Int,
+                            selected: Boolean,
+                            hasFocus: Boolean,
+                        ) {
+                            text = if (value == selectedItem) "✓ ${labelProvider(value)}" else labelProvider(value)
+                            icon = iconProvider(value)
+                        }
                     }
             }
         val search = SearchTextField()

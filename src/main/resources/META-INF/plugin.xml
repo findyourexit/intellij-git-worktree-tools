@@ -52,10 +52,6 @@
                class="dev.tomlarcher.gitarborist.actions.ProjectViewWorktreeGroup" popup="true">
             <action id="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktree"
                     class="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAction"/>
-            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAsTab"
-                    class="dev.tomlarcher.gitarborist.actions.ProjectViewOpenWorktreeAsTabAction"/>
-            <action id="dev.tomlarcher.gitarborist.actions.ProjectViewReplaceWithWorktree"
-                    class="dev.tomlarcher.gitarborist.actions.ProjectViewReplaceWithWorktreeAction"/>
             <action id="dev.tomlarcher.gitarborist.actions.ProjectViewReapplyCarryOver"
                     class="dev.tomlarcher.gitarborist.actions.ProjectViewReapplyCarryOverAction"/>
             <action id="dev.tomlarcher.gitarborist.actions.ProjectViewRemoveWorktree"

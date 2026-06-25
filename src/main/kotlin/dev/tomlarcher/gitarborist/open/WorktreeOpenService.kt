@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import dev.tomlarcher.gitarborist.carry.WorktreeCarryOverService
 import dev.tomlarcher.gitarborist.git.WorktreeInfo
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import dev.tomlarcher.gitarborist.ui.CarryOverResultDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,10 +16,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Project service that opens worktree projects. Focuses an already-open window instead of duplicating
- * it, runs carry-over before every first open, gates opening on unrecoverable copy failures, and
- * dispatches the chosen [WorktreeOpenMode]. [WorktreeOpenMode.AskEachTime] must be resolved by the
- * caller before reaching this service.
+ * Project service that opens worktree projects. Focuses an already-open window instead of opening a
+ * duplicate, runs carry-over before every first open, and gates opening on unrecoverable copy
+ * failures.
+ *
+ * Opening delegates to the IDE's standard project-open flow ([OpenProjectTask.build]): the user gets
+ * the platform's own prompt (this window / new window / cancel) and the IDE's "open project in a new
+ * window vs. tab" preference is honored, rather than the plugin forcing a specific frame.
  */
 @Service(Service.Level.PROJECT)
 class WorktreeOpenService(
@@ -30,17 +32,11 @@ class WorktreeOpenService(
     private val windowRegistry: WorktreeWindowRegistry
         get() = service()
 
-    fun openWorktreeAsync(
-        worktree: WorktreeInfo,
-        mode: WorktreeOpenMode,
-    ) {
-        cs.launch { openWorktree(worktree, mode) }
+    fun openWorktreeAsync(worktree: WorktreeInfo) {
+        cs.launch { openWorktree(worktree) }
     }
 
-    suspend fun openWorktree(
-        worktree: WorktreeInfo,
-        mode: WorktreeOpenMode,
-    ) {
+    suspend fun openWorktree(worktree: WorktreeInfo) {
         val existing = windowRegistry.findOpenProject(worktree.path)
         if (existing != null) {
             focus(existing)
@@ -50,29 +46,7 @@ class WorktreeOpenService(
         val carryOverResult = project.service<WorktreeCarryOverService>().prepareFirstOpen(worktree)
         if (!CarryOverResultDialog.confirmOpen(project, carryOverResult)) return
 
-        when (mode) {
-            WorktreeOpenMode.IdeDefault ->
-                ProjectUtil.openOrImportAsync(
-                    worktree.path,
-                    OpenProjectTask.build(),
-                )
-            WorktreeOpenMode.NewWindow ->
-                ProjectUtil.openOrImportAsync(
-                    worktree.path,
-                    OpenProjectTask.build().withForceOpenInNewFrame(true),
-                )
-            WorktreeOpenMode.AttachToCurrentFrame ->
-                ProjectUtil.openOrImportAsync(
-                    worktree.path,
-                    OpenProjectTask.build().copy(forceReuseFrame = true),
-                )
-            WorktreeOpenMode.ReplaceCurrentProject ->
-                ProjectUtil.openOrImportAsync(
-                    worktree.path,
-                    OpenProjectTask.build().withProjectToClose(project),
-                )
-            WorktreeOpenMode.AskEachTime -> error("Resolve AskEachTime before calling openWorktree")
-        }
+        ProjectUtil.openOrImportAsync(worktree.path, OpenProjectTask.build())
     }
 
     private suspend fun focus(project: Project) =

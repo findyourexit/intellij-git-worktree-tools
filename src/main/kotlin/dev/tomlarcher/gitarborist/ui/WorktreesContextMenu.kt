@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBList
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
@@ -16,8 +15,7 @@ import java.awt.event.MouseEvent
  * tool-window/menu operations. Operations are passed as callbacks so this stays UI-glue only.
  */
 internal class WorktreesContextMenu(
-    private val open: (WorktreeOpenMode) -> Unit,
-    private val replaceCurrent: () -> Unit,
+    private val open: () -> Unit,
     private val lock: () -> Unit,
     private val unlock: () -> Unit,
     private val move: () -> Unit,
@@ -38,10 +36,7 @@ internal class WorktreesContextMenu(
 
     private fun buildGroup(): DefaultActionGroup =
         DefaultActionGroup().apply {
-            add(menuAction("Open") { open(WorktreeOpenMode.IdeDefault) })
-            add(menuAction("Open in New Window") { open(WorktreeOpenMode.NewWindow) })
-            add(menuAction("Open as Tab") { open(WorktreeOpenMode.AttachToCurrentFrame) })
-            add(menuAction("Replace Current Project with Worktree", replaceCurrent))
+            add(menuAction("Open...", open))
             addSeparator()
             add(conditionalAction("Lock...", { selectedIsLocked() == false }, lock))
             add(conditionalAction("Unlock", { selectedIsLocked() == true }, unlock))

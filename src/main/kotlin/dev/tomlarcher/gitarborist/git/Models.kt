@@ -56,15 +56,6 @@ data class WorktreeStatus(
     val creatorEpochSeconds: Long? = null,
 )
 
-/** How a worktree project is opened relative to the current IDE frame. */
-enum class WorktreeOpenMode {
-    IdeDefault,
-    NewWindow,
-    AttachToCurrentFrame,
-    ReplaceCurrentProject,
-    AskEachTime,
-}
-
 /** Parameters for `git worktree add`: where to create the worktree and how to seed its branch or ref. */
 data class AddWorktreeRequest(
     val repositoryRoot: Path,

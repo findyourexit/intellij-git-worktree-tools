@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Removed
+
+- The **Open in New Window**, **Open as Tab**, and **Replace Current Project with Worktree** open modes, their Project View actions, and the "ask each time" prompt. Opening a worktree now always hands off to the IDE's standard project-open flow (open in this window, a new window, or cancel), which already honors your IDE's window-vs-tab preference. The "default open mode" setting is replaced by an "open new worktrees after creation" toggle.
+
+### Fixed
+
+- Opening a worktree no longer risks a `NoSuchMethodError` on IntelliJ 2025.3, 2026.1, and 2026.2 EAP. The former "open as tab" mode relied on `OpenProjectTask.copy(...)`, whose compiler-generated `copy$default` signature changes between platform builds; delegating to the IDE's open flow removes that dependency — and the internal-API workaround it would otherwise require — entirely.
+- Replaced the searchable-chooser popup's use of the scheduled-for-removal `SimpleListCellRenderer.create(...)` (flagged on 2026.2) with a non-deprecated `SimpleListCellRenderer` subclass; the popup looks and behaves the same.
+
+### Changed
+
+- The Plugin Verifier release gate now verifies the latest released **and EAP** IntelliJ IDEA builds (auto-resolved, alongside the build-252 floor) and fails on internal, scheduled-for-removal, non-extendable, and override-only API usage, so forward-compatibility problems surface before upload.
+
 ## [0.1.0] - 2026-06-22
 
 ### Added

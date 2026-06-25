@@ -1,5 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
@@ -10,7 +11,7 @@ plugins {
 }
 
 group = "dev.tomlarcher.gitarborist"
-version = "0.1.0"
+version = "0.1.1"
 
 kotlin {
     jvmToolchain(21)
@@ -88,9 +89,9 @@ intellijPlatform {
             <li><b>Every worktree operation through Git4Idea</b> — list, create, open, remove (with optional
             force and backing-branch deletion), lock, unlock, move, prune, and repair, all on a background
             thread.</li>
-            <li><b>Flexible open modes</b> — a new window, a tab on the current frame, in place of the current
-            project, or the IDE's normal open prompt; an already-open worktree is focused instead of opened
-            twice.</li>
+            <li><b>One-click open</b> — opening a worktree hands off to the IDE's own project-open flow
+            (open in this window, a new window, or cancel — honoring your IDE preferences); an already-open
+            worktree is focused instead of opened twice.</li>
             <li><b>Carry over project setup on first open</b> — copies <code>.idea/</code> and any paths listed
             in a <code>.worktree-copy</code> manifest into a new worktree before it opens. Secrets and heavy
             build directories are never copied.</li>
@@ -113,11 +114,26 @@ intellijPlatform {
         ides {
             create(IntelliJPlatformType.IntellijIdeaUltimate, libs.versions.intellijIdea.get())
             create(IntelliJPlatformType.AndroidStudio, libs.versions.androidStudio.get())
+            // Forward + EAP coverage, auto-resolved so it never goes stale: the latest released and
+            // EAP IntelliJ IDEA builds at or above 2025.3. This surfaces binary-incompatible platform
+            // drift (e.g. data-class copy$default) and not-yet-released deprecations before upload —
+            // the gap that let the 2025.3/2026.1/2026.2 problems through the first time.
+            select {
+                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
+                channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
+                sinceBuild = "253"
+                untilBuild = "999.*"
+            }
         }
         failureLevel.set(
             listOf(
                 VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+                VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
+                VerifyPluginTask.FailureLevel.NON_EXTENDABLE_API_USAGES,
                 VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+                VerifyPluginTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+                VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+                VerifyPluginTask.FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
             ),
         )
     }

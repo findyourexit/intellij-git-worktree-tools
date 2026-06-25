@@ -9,7 +9,7 @@ A Git worktree checks out a second branch of the same repository into its own di
 - **Worktrees tool window.** A Pull-Request-style list where each worktree is one tall row: branch title, a dimmed path / commit / age subtitle, an optional commit-message and creator line, and compact state badges (main, current, safe-to-delete, dirty, locked, prunable, detached, staged/unstaged/untracked counts, HEAD line delta, and divergence from `main` and the remote). Status loads asynchronously and never blocks the UI.
 - **Search, filter, and sort.** Full-width search across branch, path, commit, message, creator, and state, plus quick filters and dedicated State, Creator, and Sort choosers.
 - **Every worktree operation, through Git4Idea.** List, create, open, remove (with optional force and backing-branch deletion), lock and unlock, move, prune, and repair — all run on a background thread.
-- **Flexible open modes.** Open a worktree in a new window, as a tab on the current frame, in place of the current project, or through the IDE's normal project-open prompt. Already-open worktrees are focused instead of opened twice.
+- **One-click open.** Opening a worktree hands off to the IDE's own project-open flow — open in this window, a new window, or cancel — honoring your IDE settings (including whether a "new window" is a separate window or a tab). Already-open worktrees are focused instead of opened twice.
 - **Carry over project setup on first open.** Before a new worktree opens for the first time, the plugin copies `.idea/` and any files listed in a `.worktree-copy` manifest from the main worktree into the new one, so your run configurations, code style, and local tooling are present immediately. Secrets and heavy build directories are never copied (see [Carry-over](#carry-over-on-first-open)).
 - **Safe-to-delete detection.** Worktrees whose work is fully merged are dimmed and badged `SAFE`, computed from a clean working tree plus standard Git cleanup checks.
 - **IDE integration.** A `Git > Worktrees` menu, a Project View context group on worktree directories, and a tool-window title drawn from the repository's `owner/repo` identity.
@@ -38,7 +38,7 @@ In your IDE, open **Settings → Plugins → Marketplace**, search for **Git Arb
 Open the **Git Arborist** tool window from the right-hand tool-window bar, or run **Git → Worktrees → Open Worktrees Panel**.
 
 - **Create** a worktree with the `+` title action. Choose a starting point (branch, tag, commit, or `HEAD`), optionally name a new branch, pick a target directory, and decide whether to open it afterward.
-- **Open** a worktree by double-clicking it, pressing Enter, or using the **Open** title action. Right-click a row for new-window, tab, and replace-current-project variants.
+- **Open** a worktree by double-clicking it, pressing Enter, the row's right-click **Open...** action, or the **Open Worktree** title action. The IDE's standard open prompt then decides whether it opens in this window or a new one.
 - **Manage** worktrees from the row's right-click menu or the `Git > Worktrees` menu: lock, unlock, move, reapply carry-over, and remove. Removing offers force removal and, when a local branch backs the worktree, deletion of that branch.
 - **Prune** and **Repair** the repository's worktree administrative data from the `Git > Worktrees` menu.
 
@@ -56,7 +56,7 @@ Carry-over never overwrites a file that already exists in the target, preserves 
 **Settings → Version Control → Git Arborist** configures the global defaults and an optional per-project override:
 
 - Default worktree directory (used to seed the create dialog's target path).
-- Default open mode.
+- Whether to open new worktrees immediately after they are created.
 - Carry-over scope (curated, all-ignored-minus-denylist, or manifest-only) and source (main worktree or current project).
 - Whether to copy `.idea/`, the manifest file name, whether to run automatic carry-over only when the target `.idea/` is missing, whether to allow heavy manifest paths, and whether to show worktree locations relative to the repository root.
 

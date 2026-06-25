@@ -10,7 +10,6 @@ import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import dev.tomlarcher.gitarborist.carry.CarryOverScope
 import dev.tomlarcher.gitarborist.carry.CarryOverSource
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 
 /** Settings UI under Version Control > Git Arborist for the global defaults and project override. */
 class GitArboristConfigurable(
@@ -25,9 +24,8 @@ class GitArboristConfigurable(
                 row("Default worktree directory:") {
                     textField().bindText(global::defaultWorktreeDirectory)
                 }
-                row("Default open mode:") {
-                    comboBox(WorktreeOpenMode.entries.toList())
-                        .bindItem({ global.defaultOpenMode }, { global.defaultOpenMode = it ?: WorktreeOpenMode.NewWindow })
+                row {
+                    checkBox("Open new worktrees after creation").bindSelected(global::openAfterCreate)
                 }
                 row("Carry-over scope:") {
                     comboBox(CarryOverScope.entries.toList())
@@ -61,9 +59,8 @@ class GitArboristConfigurable(
                 row("Default worktree directory:") {
                     textField().bindText(projectState::defaultWorktreeDirectory)
                 }
-                row("Default open mode:") {
-                    comboBox(WorktreeOpenMode.entries.toList())
-                        .bindItem({ projectState.defaultOpenMode }, { projectState.defaultOpenMode = it ?: WorktreeOpenMode.NewWindow })
+                row {
+                    checkBox("Open new worktrees after creation").bindSelected(projectState::openAfterCreate)
                 }
                 row("Carry-over scope:") {
                     comboBox(CarryOverScope.entries.toList())

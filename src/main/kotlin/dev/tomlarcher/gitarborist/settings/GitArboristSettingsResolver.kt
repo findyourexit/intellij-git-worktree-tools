@@ -5,12 +5,11 @@ import com.intellij.openapi.project.Project
 import dev.tomlarcher.gitarborist.carry.CarryOverScope
 import dev.tomlarcher.gitarborist.carry.CarryOverSource
 import dev.tomlarcher.gitarborist.carry.EffectiveCarryOverSettings
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 
 /** Fully resolved settings after applying the global/project override cascade. */
 data class EffectiveGitArboristSettings(
     val defaultWorktreeDirectory: String,
-    val defaultOpenMode: WorktreeOpenMode,
+    val openAfterCreate: Boolean,
     val carryOverScope: CarryOverScope,
     val carryOverSource: CarryOverSource,
     val copyIdeaDirectory: Boolean,
@@ -39,7 +38,7 @@ object GitArboristSettingsResolver {
         return if (projectState.useProjectSettings) {
             EffectiveGitArboristSettings(
                 defaultWorktreeDirectory = projectState.defaultWorktreeDirectory,
-                defaultOpenMode = projectState.defaultOpenMode,
+                openAfterCreate = projectState.openAfterCreate,
                 carryOverScope = projectState.carryOverScope,
                 carryOverSource = projectState.carryOverSource,
                 copyIdeaDirectory = projectState.copyIdeaDirectory,
@@ -51,7 +50,7 @@ object GitArboristSettingsResolver {
         } else {
             EffectiveGitArboristSettings(
                 defaultWorktreeDirectory = global.defaultWorktreeDirectory,
-                defaultOpenMode = global.defaultOpenMode,
+                openAfterCreate = global.openAfterCreate,
                 carryOverScope = global.carryOverScope,
                 carryOverSource = global.carryOverSource,
                 copyIdeaDirectory = global.copyIdeaDirectory,

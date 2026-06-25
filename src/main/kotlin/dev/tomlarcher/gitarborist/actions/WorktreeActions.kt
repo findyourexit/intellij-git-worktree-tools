@@ -23,7 +23,6 @@ import dev.tomlarcher.gitarborist.git.WorktreeCacheSnapshot
 import dev.tomlarcher.gitarborist.git.WorktreeCommandResult
 import dev.tomlarcher.gitarborist.git.WorktreeGitService
 import dev.tomlarcher.gitarborist.git.WorktreeInfo
-import dev.tomlarcher.gitarborist.git.WorktreeOpenMode
 import dev.tomlarcher.gitarborist.git.requiresForceRetry
 import dev.tomlarcher.gitarborist.open.WorktreeOpenService
 import dev.tomlarcher.gitarborist.settings.GitArboristSettingsResolver
@@ -52,9 +51,9 @@ class CreateWorktreeAction : DumbAwareAction() {
             val main = snapshot.worktrees.firstOrNull { it.isMain } ?: snapshot.worktrees.firstOrNull()
             val repositoryRoot = main?.repositoryRoot ?: project.basePath?.let(Path::of) ?: return@loadWorktrees
             val settings = GitArboristSettingsResolver.effective(project)
-            val dialog = CreateWorktreeDialog(project, repositoryRoot, settings.defaultOpenMode, settings.defaultWorktreeDirectory)
+            val dialog = CreateWorktreeDialog(project, repositoryRoot, settings.openAfterCreate, settings.defaultWorktreeDirectory)
             if (dialog.showAndGet()) {
-                create(project, dialog.request(), dialog.selectedOpenMode)
+                create(project, dialog.request(), dialog.shouldOpenAfterCreate)
             }
         }
     }
@@ -64,7 +63,7 @@ class CreateWorktreeAction : DumbAwareAction() {
     private fun create(
         project: Project,
         request: AddWorktreeRequest,
-        openMode: WorktreeOpenMode?,
+        openAfterCreate: Boolean,
     ) {
         runBackground(
             project = project,
@@ -72,7 +71,7 @@ class CreateWorktreeAction : DumbAwareAction() {
             work = {
                 val result = project.service<WorktreeGitService>().addWorktree(request)
                 val created =
-                    if (result.success && openMode != null) {
+                    if (result.success && openAfterCreate) {
                         project
                             .service<WorktreeCacheService>()
                             .refreshBlocking()
@@ -87,7 +86,7 @@ class CreateWorktreeAction : DumbAwareAction() {
             if (created.result.success) {
                 Notifications.info(project, "Worktree created", request.targetPath.toString())
                 created.worktree?.let { worktree ->
-                    openMode?.let { project.service<WorktreeOpenService>().openWorktreeAsync(worktree, it) }
+                    if (openAfterCreate) project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
                 }
             } else {
                 Notifications.error(project, "Unable to create worktree", created.result.output.ifBlank { "Git command failed" })
@@ -100,8 +99,7 @@ class OpenWorktreeAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         chooseWorktree(project, includeMain = false, title = "Open Worktree") { worktree ->
-            val mode = resolveMode(project, GitArboristSettingsResolver.effective(project).defaultOpenMode)
-            project.service<WorktreeOpenService>().openWorktreeAsync(worktree, mode)
+            project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
         }
     }
 
@@ -119,7 +117,7 @@ class ReapplyCarryOverAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 }
 
-/** Dynamic submenu listing non-current worktrees; each entry opens that worktree in a new window. */
+/** Dynamic submenu listing non-current worktrees; each entry opens that worktree. */
 class SwitchToWorktreeActionGroup : ActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val project = e?.project ?: return emptyArray()
@@ -132,7 +130,7 @@ class SwitchToWorktreeActionGroup : ActionGroup() {
             .map { worktree ->
                 object : DumbAwareAction(worktree.branch ?: worktree.path.fileName?.toString() ?: worktree.path.toString()) {
                     override fun actionPerformed(e: AnActionEvent) {
-                        project.service<WorktreeOpenService>().openWorktreeAsync(worktree, WorktreeOpenMode.NewWindow)
+                        project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
                     }
 
                     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -242,19 +240,7 @@ class MoveWorktreeAction : DumbAwareAction() {
 }
 
 class ProjectViewOpenWorktreeAction : DumbAwareAction() {
-    override fun actionPerformed(e: AnActionEvent) = openSelected(e, WorktreeOpenMode.NewWindow)
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-}
-
-class ProjectViewOpenWorktreeAsTabAction : DumbAwareAction() {
-    override fun actionPerformed(e: AnActionEvent) = openSelected(e, WorktreeOpenMode.AttachToCurrentFrame)
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-}
-
-class ProjectViewReplaceWithWorktreeAction : DumbAwareAction() {
-    override fun actionPerformed(e: AnActionEvent) = openSelected(e, WorktreeOpenMode.ReplaceCurrentProject)
+    override fun actionPerformed(e: AnActionEvent) = openSelected(e)
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 }
@@ -389,13 +375,10 @@ private fun selectedWorktree(e: AnActionEvent): WorktreeInfo? {
         .firstOrNull { PathUtil.samePath(it.path, path) && !it.isMain }
 }
 
-private fun openSelected(
-    e: AnActionEvent,
-    mode: WorktreeOpenMode,
-) {
+private fun openSelected(e: AnActionEvent) {
     val project = e.project ?: return
     val worktree = selectedWorktree(e) ?: return
-    project.service<WorktreeOpenService>().openWorktreeAsync(worktree, mode)
+    project.service<WorktreeOpenService>().openWorktreeAsync(worktree)
 }
 
 private fun loadMainRoot(
@@ -464,27 +447,6 @@ private fun <T> runBackground(
             }
         },
     )
-}
-
-private fun resolveMode(
-    project: Project,
-    mode: WorktreeOpenMode,
-): WorktreeOpenMode {
-    if (mode != WorktreeOpenMode.AskEachTime) return mode
-    val result =
-        Messages.showDialog(
-            project,
-            "How should this worktree open?",
-            "Open Worktree",
-            arrayOf("New Window", "Open as Tab", "Replace Current Project"),
-            0,
-            null,
-        )
-    return when (result) {
-        1 -> WorktreeOpenMode.AttachToCurrentFrame
-        2 -> WorktreeOpenMode.ReplaceCurrentProject
-        else -> WorktreeOpenMode.NewWindow
-    }
 }
 
 private data class CreateResult(
