@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Settings changed just before opening a worktree now carry over reliably. Carry-over reads the source project's `.idea/` from disk, but the IDE debounces `PersistentStateComponent` writes and otherwise flushes them only on frame deactivation or project close — so settings edited moments earlier, most visibly **Settings | Tools** entries from third-party plugins (Detekt, Develocity, KtLint, …) persisted to `.idea/` XML files, could be copied stale or missing. The open source project's settings are now flushed to disk before the copy runs.
+
+## [0.1.1] - 2026-06-23
+
 ### Removed
 
 - The **Open in New Window**, **Open as Tab**, and **Replace Current Project with Worktree** open modes, their Project View actions, and the "ask each time" prompt. Opening a worktree now always hands off to the IDE's standard project-open flow (open in this window, a new window, or cancel), which already honors your IDE's window-vs-tab preference. The "default open mode" setting is replaced by an "open new worktrees after creation" toggle.
@@ -33,5 +39,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Git > Worktrees` main-menu group, Project View context group on worktree directories, and a tool-window title drawn from the repository's `owner/repo` identity.
 - Settings under Version Control > Git Arborist for the default worktree directory, open mode, carry-over scope and source, `.idea/` copying, manifest file name, automatic-carry-over guard, heavy-path opt-in, and relative locations, with an optional per-project override.
 
-[Unreleased]: https://github.com/findyourexit/intellij-git-arborist/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/findyourexit/intellij-git-arborist/releases/tag/v0.1.0
+[Unreleased]: https://github.com/findyourexit/intellij-git-arborist/compare/0.1.0...HEAD
+[0.1.1]: https://github.com/findyourexit/intellij-git-arborist/releases/tag/0.1.1
+[0.1.0]: https://github.com/findyourexit/intellij-git-arborist/releases/tag/0.1.0
