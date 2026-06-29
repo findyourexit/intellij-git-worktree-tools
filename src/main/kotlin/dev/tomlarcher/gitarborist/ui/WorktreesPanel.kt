@@ -1,6 +1,7 @@
 package dev.tomlarcher.gitarborist.ui
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -25,6 +26,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.fields.ExtendableTextComponent
 import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.ui.scale.JBUIScale
+import com.intellij.util.Alarm
 import com.intellij.util.ui.FilterComponent
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -40,6 +42,8 @@ import dev.tomlarcher.gitarborist.open.WorktreeOpenService
 import dev.tomlarcher.gitarborist.settings.GitArboristSettingsResolver
 import dev.tomlarcher.gitarborist.util.Notifications
 import dev.tomlarcher.gitarborist.util.PathUtil
+import git4idea.repo.GitRepository
+import git4idea.repo.GitRepositoryChangeListener
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -73,6 +77,7 @@ import javax.swing.event.DocumentEvent
 class WorktreesPanel(
     private val project: Project,
     private val viewModel: WorktreesViewModel,
+    parentDisposable: Disposable,
     private val onRendered: () -> Unit = {},
 ) : JPanel(BorderLayout()) {
     private val listModel = DefaultListModel<WorktreeRow>()
@@ -115,6 +120,7 @@ class WorktreesPanel(
         }
     private val searchHistory = mutableListOf<String>()
     private var emptyRefreshRetries = 0
+    private val externalChangeAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, parentDisposable)
     private val searchField =
         ExtendableTextField().apply {
             emptyText.text = "Search branch, path, status, commit, message"
@@ -196,6 +202,7 @@ class WorktreesPanel(
             remove = ::removeSelected,
             selectedIsLocked = { list.selectedValue?.info?.isLocked },
         ).installOn(list)
+        installExternalChangeListener(parentDisposable)
         refresh()
     }
 
@@ -309,6 +316,27 @@ class WorktreesPanel(
         viewModel.refresh {
             SwingUtilities.invokeLater { render(viewModel.state) }
         }
+    }
+
+    /**
+     * Subscribes to Git4Idea repository changes so worktrees added, removed, or moved outside this
+     * tool window (the Git CLI, other plugins) update the list without a manual refresh. Bursts of
+     * change events are coalesced, and only refreshed while the panel is showing to avoid background
+     * Git churn for a hidden tool window; changes made while hidden are picked up on next show.
+     */
+    private fun installExternalChangeListener(parentDisposable: Disposable) {
+        project.messageBus
+            .connect(parentDisposable)
+            .subscribe(
+                GitRepository.GIT_REPO_CHANGE,
+                GitRepositoryChangeListener { if (isShowing) refreshSilently() },
+            )
+    }
+
+    /** Coalesces rapid external change events into a single deferred refresh. */
+    fun refreshSilently() {
+        externalChangeAlarm.cancelAllRequests()
+        externalChangeAlarm.addRequest({ refresh() }, EXTERNAL_REFRESH_DELAY_MS)
     }
 
     private fun render(state: WorktreesUiState) {
@@ -1106,6 +1134,7 @@ private const val AVATAR_SATURATION = 0.55f
 private const val AVATAR_BRIGHTNESS = 0.72f
 private const val INITIAL_EMPTY_REFRESH_RETRIES = 2
 private const val INITIAL_EMPTY_REFRESH_DELAY_MS = 750
+private const val EXTERNAL_REFRESH_DELAY_MS = 400
 
 private fun worktreeBadges(row: WorktreeRow): List<WorktreeBadge> = worktreeStateBadges(row) + worktreeChangeBadges(row) + worktreeDivergenceBadges(row)
 

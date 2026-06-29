@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The Worktrees tool window now keeps itself current when worktrees are added, removed, or moved outside Git Arborist (the Git CLI, other plugins, or other IDE actions). It refreshes silently on Git4Idea repository changes while visible, and when the tool window is reopened, so the list no longer goes stale until a manual refresh.
+
 ### Fixed
 
 - Settings changed just before opening a worktree now carry over reliably. Carry-over reads the source project's `.idea/` from disk, but the IDE debounces `PersistentStateComponent` writes and otherwise flushes them only on frame deactivation or project close — so settings edited moments earlier, most visibly **Settings | Tools** entries from third-party plugins (Detekt, Develocity, KtLint, …) persisted to `.idea/` XML files, could be copied stale or missing. The open source project's settings are now flushed to disk before the copy runs.
