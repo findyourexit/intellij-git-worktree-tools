@@ -10,6 +10,8 @@ import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import com.intellij.openapi.wm.impl.content.ToolWindowContentUi
 import com.intellij.ui.content.ContentFactory
 import dev.tomlarcher.gitarborist.git.RepositoryScope
@@ -39,7 +41,7 @@ class WorktreesToolWindowFactory :
         lateinit var panel: WorktreesPanel
 
         fun updateTitle() = updateRepositoryTitle(project, toolWindow, content)
-        panel = WorktreesPanel(project, viewModel, ::updateTitle)
+        panel = WorktreesPanel(project, viewModel, toolWindow.disposable, ::updateTitle)
         content = ContentFactory.getInstance().createContent(panel, "", false)
         toolWindow.component.putClientProperty(ToolWindowContentUi.HIDE_ID_LABEL, "true")
         updateTitle()
@@ -53,6 +55,31 @@ class WorktreesToolWindowFactory :
             ),
         )
         toolWindow.contentManager.addContent(content)
+        refreshWhenShown(project, toolWindow, panel)
+    }
+
+    /**
+     * Silently refreshes the panel whenever the tool window becomes visible, so worktrees changed
+     * outside Git Arborist while it was hidden are picked up on next show without a manual refresh.
+     */
+    private fun refreshWhenShown(
+        project: Project,
+        toolWindow: ToolWindow,
+        panel: WorktreesPanel,
+    ) {
+        var wasVisible = toolWindow.isVisible
+        project.messageBus
+            .connect(toolWindow.disposable)
+            .subscribe(
+                ToolWindowManagerListener.TOPIC,
+                object : ToolWindowManagerListener {
+                    override fun stateChanged(toolWindowManager: ToolWindowManager) {
+                        val visible = toolWindow.isVisible
+                        if (visible && !wasVisible) panel.refresh()
+                        wasVisible = visible
+                    }
+                },
+            )
     }
 
     private fun updateRepositoryTitle(
